@@ -42,46 +42,50 @@ export default function Register() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-row">
                         <div className="form-group">
-                            <label>First Name</label>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">First Name</label>
                             <input
                                 type="text"
                                 placeholder="Ilyas"
                                 value={form.firstName}
                                 onChange={(e) => update('firstName', e.target.value)}
                                 required
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                             />
                         </div>
                         <div className="form-group">
-                            <label>Last Name</label>
+                            <label className="block text-sm font-medium text-gray-400 mb-1">Last Name</label>
                             <input
                                 type="text"
                                 placeholder="Faquih"
                                 value={form.lastName}
                                 onChange={(e) => update('lastName', e.target.value)}
                                 required
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                             />
                         </div>
                     </div>
 
                     <div className="form-group">
-                        <label>Email</label>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
                         <input
                             type="email"
                             placeholder="ilyas@example.com"
                             value={form.email}
                             onChange={(e) => update('email', e.target.value)}
                             required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Phone</label>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Phone</label>
                         <input
                             type="tel"
                             placeholder="+212 600 000 000"
                             value={form.phone}
                             onChange={(e) => update('phone', e.target.value)}
                             required
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                         />
                     </div>
 
@@ -99,7 +103,11 @@ export default function Register() {
                         />
                     </div>
 
-                    <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', justifyContent: 'center' }}>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex justify-center items-center"
+                    >
                         {loading ? <span className="spinner"></span> : '🚀 Register'}
                     </button>
                 </form>
