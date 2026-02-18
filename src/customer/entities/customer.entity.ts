@@ -34,6 +34,9 @@ export class Customer {
   @Column({ nullable: false })
   phone: string;
 
+  @Column({ nullable: true }) // Nullable for existing users, but required for new ones
+  password: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

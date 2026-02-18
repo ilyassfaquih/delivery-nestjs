@@ -1,16 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { createOrder } from '../services/api';
 import { useToast } from '../components/Toast';
 
 export default function Order({ cart, setCart }) {
+    const navigate = useNavigate();
     const toast = useToast();
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(null);
     const [form, setForm] = useState({
         customerCode: '',
         deliveryTime: '',
         deliveryMode: 'DELIVERY',
     });
+
+    // Check for payment success from Checkout redirect
+    const location = useLocation();
+    useEffect(() => {
+        if (location.state?.paymentSuccess) {
+            setSuccess({ id: 'PAID', deliveryMode: 'DELIVERY', deliveryTime: 'ASAP' }); // Mock success data or pass from Checkout
+            setCart([]);
+            toast('Payment Successful! Order Placed.');
+            // Clear state to prevent loop if desired, but React Router handles it
+            window.history.replaceState({}, document.title);
+        }
+    }, [location.state]);
 
     function update(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -30,23 +42,18 @@ export default function Order({ cart, setCart }) {
             return;
         }
 
-        setLoading(true);
-        try {
-            const dto = {
-                customerCode: form.customerCode,
-                deliveryTime: form.deliveryTime,
-                deliveryMode: form.deliveryMode,
-                menuItemIds: cart.map((item) => item.id),
-            };
-            const data = await createOrder(dto);
-            setSuccess(data);
-            setCart([]);
-            toast('Order placed successfully! 🎉');
-        } catch (err) {
-            toast(err.message, 'error');
-        } finally {
-            setLoading(false);
-        }
+        // Navigate to checkout with order details
+        navigate('/checkout', {
+            state: {
+                total,
+                items: cart,
+                orderDetails: {
+                    customerCode: form.customerCode,
+                    deliveryTime: form.deliveryTime,
+                    deliveryMode: form.deliveryMode,
+                }
+            }
+        });
     }
 
     if (success) {

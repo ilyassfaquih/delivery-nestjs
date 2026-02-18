@@ -1,12 +1,21 @@
 const API_BASE = '/api';
 
-async function request(endpoint, options = {}) {
+export async function request(endpoint, options = {}) {
+    const token = localStorage.getItem('token');
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { Optimization: `Bearer ${token}` } : {}), // Typo protection? Authorization
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+    };
+
     const config = {
-        headers: { 'Content-Type': 'application/json' },
         ...options,
+        headers,
     };
 
     const res = await fetch(`${API_BASE}${endpoint}`, config);
+    // ... rest is same
     const data = await res.json().catch(() => null);
 
     if (!res.ok) {
@@ -18,7 +27,10 @@ async function request(endpoint, options = {}) {
     return data;
 }
 
-// ── Customer API ──
+// ── Auth API ──
+export const login = (credentials) =>
+    request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
+
 export const registerCustomer = (dto) =>
     request('/customers', { method: 'POST', body: JSON.stringify(dto) });
 

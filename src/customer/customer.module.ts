@@ -18,6 +18,6 @@ import { CustomerController } from './customer.controller';
     imports: [TypeOrmModule.forFeature([Customer])],
     controllers: [CustomerController],
     providers: [CustomerService],
-    exports: [TypeOrmModule], // So OrderModule can inject CustomerRepository
+    exports: [TypeOrmModule, CustomerService], // So OrderModule can inject CustomerRepository
 })
 export class CustomerModule { }

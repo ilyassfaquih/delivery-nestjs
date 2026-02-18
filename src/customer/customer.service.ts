@@ -15,36 +15,28 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
  *   - Spring uses @Autowired / @RequiredArgsConstructor
  *   - NestJS uses constructor + @InjectRepository for TypeORM repos
  */
+import * as bcrypt from 'bcrypt';
+
 @Injectable()
 export class CustomerService {
     constructor(
-        /**
-         * Equivalent to: private final CustomerRepository customerRepository;
-         * TypeORM Repository = Spring Data JpaRepository
-         */
         @InjectRepository(Customer)
         private readonly customerRepository: Repository<Customer>,
     ) { }
 
-    /**
-     * Creates a new customer from the given DTO.
-     *
-     * Equivalent to: customerMapper.toEntity(dto) → save → toResponseDto(saved)
-     * In NestJS, we don't need MapStruct — we map manually (TypeScript makes it easy).
-     */
     async createCustomer(dto: CreateCustomerDto) {
-        // Create entity from DTO (equivalent to customerMapper.toEntity(dto))
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
+
         const customer = this.customerRepository.create({
             firstName: dto.firstName,
             lastName: dto.lastName,
             email: dto.email,
             phone: dto.phone,
+            password: hashedPassword,
         });
 
-        // Save (equivalent to customerRepository.save(customer))
         const saved = await this.customerRepository.save(customer);
 
-        // Return response (equivalent to customerMapper.toResponseDto(saved))
         return {
             id: saved.id,
             code: saved.code,
@@ -54,5 +46,9 @@ export class CustomerService {
             phone: saved.phone,
             createdAt: saved.createdAt,
         };
+    }
+
+    async findByEmail(email: string): Promise<Customer | null> {
+        return this.customerRepository.findOne({ where: { email } });
     }
 }

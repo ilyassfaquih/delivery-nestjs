@@ -11,6 +11,7 @@ export default function Register() {
         lastName: '',
         email: '',
         phone: '',
+        password: '',
     });
 
     function update(field, value) {
@@ -81,6 +82,20 @@ export default function Register() {
                             value={form.phone}
                             onChange={(e) => update('phone', e.target.value)}
                             required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                            minLength={6}
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                            placeholder="••••••"
+                            value={form.password}
+                            onChange={(e) => update('password', e.target.value)}
                         />
                     </div>
 

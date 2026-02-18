@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CustomerModule } from './customer/customer.module';
 import { MenuModule } from './menu/menu.module';
 import { OrderModule } from './order/order.module';
+import { AuthModule } from './auth/auth.module';
+import { PaymentModule } from './payment/payment.module';
 
 /**
  * Root application module.
@@ -36,6 +38,8 @@ import { OrderModule } from './order/order.module';
     CustomerModule,
     MenuModule,
     OrderModule,
+    AuthModule,
+    PaymentModule,
   ],
 })
 export class AppModule { }
