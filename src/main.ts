@@ -26,7 +26,7 @@ async function bootstrap() {
 
   // ─── Enable CORS (equivalent to CorsConfig.java) ──────────────
   app.enableCors({
-    origin: ['http://localhost:4200'],
+    origin: ['http://localhost:4200', 'http://localhost:5173'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
