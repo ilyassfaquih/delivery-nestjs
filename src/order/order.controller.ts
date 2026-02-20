@@ -1,4 +1,5 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 
@@ -16,8 +17,9 @@ export class OrderController {
      * POST /api/orders
      */
     @Post()
+    @UseGuards(AuthGuard('jwt'))
     @HttpCode(HttpStatus.CREATED)
-    async createOrder(@Body() dto: CreateOrderDto) {
-        return this.orderService.createOrder(dto);
+    async createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
+        return this.orderService.createOrder(req.user.userId, dto);
     }
 }

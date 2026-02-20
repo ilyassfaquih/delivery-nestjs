@@ -2,13 +2,20 @@ import {
     Controller,
     Get,
     Post,
+    Put,
     Body,
+    Param,
     Query,
     HttpCode,
     HttpStatus,
+    UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { MenuService } from './menu.service';
 import { CreateMenuItemDto } from './dto/create-menu-item.dto';
+import { UpdateMenuItemDto } from './dto/update-menu-item.dto';
 
 /**
  * REST controller for menu item management.
@@ -39,8 +46,24 @@ export class MenuController {
      * POST /api/menu
      */
     @Post()
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
     @HttpCode(HttpStatus.CREATED)
     async addMenuItem(@Body() dto: CreateMenuItemDto) {
         return this.menuService.addMenuItem(dto);
+    }
+
+    /**
+     * Updates an existing menu item.
+     * PUT /api/menu/:id
+     */
+    @Put(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
+    async updateMenuItem(
+        @Param('id') id: string,
+        @Body() dto: UpdateMenuItemDto,
+    ) {
+        return this.menuService.updateMenuItem(+id, dto);
     }
 }

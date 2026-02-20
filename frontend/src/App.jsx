@@ -26,7 +26,7 @@ export default function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/menu" element={<Menu addToCart={addToCart} />} />
+            <Route path="/menu" element={<Menu cart={cart} setCart={setCart} />} />
             <Route
               path="/checkout"
               element={
@@ -46,7 +46,7 @@ export default function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireAdmin={true}>
                   <Admin />
                 </ProtectedRoute>
               }

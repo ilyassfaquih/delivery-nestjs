@@ -33,6 +33,7 @@ export class CustomerService {
             email: dto.email,
             phone: dto.phone,
             password: hashedPassword,
+            role: dto.email.startsWith('admin@') ? 'ADMIN' : 'CUSTOMER',
         });
 
         const saved = await this.customerRepository.save(customer);
@@ -44,11 +45,47 @@ export class CustomerService {
             lastName: saved.lastName,
             email: saved.email,
             phone: saved.phone,
+            role: saved.role,
             createdAt: saved.createdAt,
         };
     }
 
     async findByEmail(email: string): Promise<Customer | null> {
         return this.customerRepository.findOne({ where: { email } });
+    }
+
+    async findAll(): Promise<Partial<Customer>[]> {
+        const customers = await this.customerRepository.find();
+        return customers.map(c => ({
+            id: c.id,
+            code: c.code,
+            firstName: c.firstName,
+            lastName: c.lastName,
+            email: c.email,
+            phone: c.phone,
+            role: c.role,
+            isBanned: c.isBanned,
+            createdAt: c.createdAt,
+        }));
+    }
+
+    async toggleBan(id: number): Promise<Partial<Customer>> {
+        const customer = await this.customerRepository.findOne({ where: { id } });
+        if (!customer) {
+            throw new Error('Customer not found');
+        }
+        if (customer.role === 'ADMIN') {
+            throw new Error('Cannot ban an administrator');
+        }
+
+        customer.isBanned = !customer.isBanned;
+        const saved = await this.customerRepository.save(customer);
+        return {
+            id: saved.id,
+            firstName: saved.firstName,
+            lastName: saved.lastName,
+            email: saved.email,
+            isBanned: saved.isBanned,
+        };
     }
 }

@@ -43,8 +43,27 @@ export class MenuService {
         const item = this.menuRepository.create({
             name: dto.name,
             price: dto.price,
+            imageUrl: dto.imageUrl,
             available: dto.available,
         });
+        return this.menuRepository.save(item);
+    }
+
+    /**
+     * Updates an existing menu item.
+     * Throws an error if not found.
+     */
+    async updateMenuItem(id: number, dto: any): Promise<MenuItem> {
+        const item = await this.menuRepository.findOne({ where: { id } });
+        if (!item) {
+            throw new Error(`Menu Item with ID ${id} not found.`);
+        }
+
+        if (dto.name !== undefined) item.name = dto.name;
+        if (dto.price !== undefined) item.price = dto.price;
+        if (dto.imageUrl !== undefined) item.imageUrl = dto.imageUrl;
+        if (dto.available !== undefined) item.available = dto.available;
+
         return this.menuRepository.save(item);
     }
 }

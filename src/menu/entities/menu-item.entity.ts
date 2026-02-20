@@ -18,4 +18,7 @@ export class MenuItem {
 
     @Column({ default: true })
     available: boolean;
+
+    @Column({ nullable: true })
+    imageUrl: string;
 }

@@ -33,7 +33,9 @@ export default function Navbar() {
 
                 {user ? (
                     <>
-                        <li><NavLink to="/admin" onClick={() => setOpen(false)}>Admin</NavLink></li>
+                        {user.role === 'ADMIN' && (
+                            <li><NavLink to="/admin" onClick={() => setOpen(false)}>Admin</NavLink></li>
+                        )}
                         <li>
                             <button onClick={handleLogout} className="btn-logout" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', font: 'inherit' }}>
                                 Logout ({user.firstName})

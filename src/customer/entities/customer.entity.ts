@@ -34,8 +34,14 @@ export class Customer {
   @Column({ nullable: false })
   phone: string;
 
-  @Column({ nullable: true }) // Nullable for existing users, but required for new ones
+  @Column({ nullable: true })
   password: string;
+
+  @Column({ default: 'CUSTOMER' })
+  role: string;
+
+  @Column({ default: false })
+  isBanned: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

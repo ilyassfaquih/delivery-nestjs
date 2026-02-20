@@ -4,6 +4,7 @@ import {
     IsPositive,
     IsBoolean,
     MaxLength,
+    IsOptional,
 } from 'class-validator';
 
 /**
@@ -22,4 +23,7 @@ export class CreateMenuItemDto {
 
     @IsBoolean({ message: 'Available must be a boolean' })
     available: boolean;
+
+    @IsOptional()
+    imageUrl?: string;
 }

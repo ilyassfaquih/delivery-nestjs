@@ -25,7 +25,10 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        const payload = { email: user.email, sub: user.id, code: user.code };
+        if (user.isBanned) {
+            throw new UnauthorizedException('This account has been banned. Please contact support.');
+        }
+        const payload = { email: user.email, sub: user.id, code: user.code, role: user.role, firstName: user.firstName, lastName: user.lastName };
         return {
             access_token: this.jwtService.sign(payload),
             user: user,

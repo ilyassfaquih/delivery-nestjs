@@ -4,7 +4,6 @@ export async function request(endpoint, options = {}) {
     const token = localStorage.getItem('token');
     const headers = {
         'Content-Type': 'application/json',
-        ...(token ? { Optimization: `Bearer ${token}` } : {}), // Typo protection? Authorization
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
     };
@@ -17,6 +16,12 @@ export async function request(endpoint, options = {}) {
     const res = await fetch(`${API_BASE}${endpoint}`, config);
     // ... rest is same
     const data = await res.json().catch(() => null);
+
+    if (res.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please log in again.');
+    }
 
     if (!res.ok) {
         const message =
@@ -41,6 +46,16 @@ export const getMenuItems = (query = '') =>
 export const addMenuItem = (dto) =>
     request('/menu', { method: 'POST', body: JSON.stringify(dto) });
 
+export const updateMenuItem = (id, dto) =>
+    request(`/menu/${id}`, { method: 'PUT', body: JSON.stringify(dto) });
+
 // ── Order API ──
 export const createOrder = (dto) =>
     request('/orders', { method: 'POST', body: JSON.stringify(dto) });
+
+// ── Admin Customer API ──
+export const getCustomers = () =>
+    request('/customers', { method: 'GET' });
+
+export const toggleCustomerBan = (id) =>
+    request(`/customers/${id}/ban`, { method: 'PUT' });

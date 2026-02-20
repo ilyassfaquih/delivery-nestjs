@@ -5,9 +5,9 @@ import {
     ArrayNotEmpty,
     IsNumber,
     Validate,
+    IsOptional,
 } from 'class-validator';
-import { DeliveryMode } from '../entities/food-order.entity';
-import { IsValidDeliveryTime } from '../../common/validators/delivery-time.validator';
+import { DeliveryMode, PaymentMode } from '../entities/food-order.entity';
 
 /**
  * DTO for placing a new food order.
@@ -20,18 +20,24 @@ import { IsValidDeliveryTime } from '../../common/validators/delivery-time.valid
  *   - @NotNull → @IsNotEmpty
  */
 export class CreateOrderDto {
-    @IsNotEmpty({ message: 'Customer code is required' })
-    customerCode: string;
+    @IsOptional()
+    address?: string;
 
-    @IsNotEmpty({ message: 'Delivery time is required' })
-    @Validate(IsValidDeliveryTime, {
-        message: 'Outside business hours (08:00 - 00:00)',
-    })
-    deliveryTime: string; // Format "HH:mm"
+    @IsOptional()
+    @IsNumber({}, { message: 'Latitude must be a valid number' })
+    latitude?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: 'Longitude must be a valid number' })
+    longitude?: number;
 
     @IsNotEmpty({ message: 'Delivery mode is required' })
     @IsEnum(DeliveryMode, { message: 'Delivery mode must be DELIVERY or PICKUP' })
     deliveryMode: DeliveryMode;
+
+    @IsNotEmpty({ message: 'Payment mode is required' })
+    @IsEnum(PaymentMode, { message: 'Payment mode must be CARD or CASH' })
+    paymentMode: PaymentMode;
 
     @IsArray({ message: 'Menu item IDs must be an array' })
     @ArrayNotEmpty({ message: 'The order must contain at least one menu item' })

@@ -1,10 +1,12 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 export default function Login() {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,7 +18,8 @@ export default function Login() {
 
         const result = await login(formData.email, formData.password);
         if (result.success) {
-            navigate('/menu');
+            const origin = location.state?.from?.pathname || '/menu';
+            navigate(origin, { replace: true });
         } else {
             setError(result.error);
         }

@@ -85,13 +85,13 @@ export default function Checkout() {
 
     const handleSuccess = async (paymentIntent) => {
         try {
-            await createOrder({
+            const backendOrderDetails = await createOrder({
                 ...orderDetails,
                 menuItemIds: items.map(item => item.id),
                 // paymentIntentId: paymentIntent.id // Optional: save transaction ID
             });
 
-            navigate('/order', { state: { paymentSuccess: true } });
+            navigate('/order', { state: { paymentSuccess: true, order: backendOrderDetails } });
         } catch (err) {
             alert('Payment successful but order creation failed: ' + err.message);
         }

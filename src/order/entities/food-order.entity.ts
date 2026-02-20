@@ -20,6 +20,11 @@ export enum DeliveryMode {
     PICKUP = 'PICKUP',
 }
 
+export enum PaymentMode {
+    CARD = 'CARD',
+    CASH = 'CASH',
+}
+
 /**
  * Represents a food order placed by a Customer.
  * An order contains one or more MenuItems.
@@ -42,6 +47,23 @@ export class FoodOrder {
     })
     deliveryMode: DeliveryMode;
 
+    @Column({
+        name: 'payment_mode',
+        type: 'enum',
+        enum: PaymentMode,
+        default: PaymentMode.CARD,
+    })
+    paymentMode: PaymentMode;
+
+    @Column({ nullable: true })
+    address: string;
+
+    @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
+    latitude: number;
+
+    @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
+    longitude: number;
+
     /**
      * @ManyToOne → Customer (equivalent to JPA @ManyToOne)
      * Each order belongs to one customer.
@@ -61,6 +83,9 @@ export class FoodOrder {
         inverseJoinColumn: { name: 'menu_item_id' },
     })
     menuItems: MenuItem[];
+
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+    totalPrice: number;
 
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;

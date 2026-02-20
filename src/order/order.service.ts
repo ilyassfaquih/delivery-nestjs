@@ -38,16 +38,34 @@ export class OrderService {
      * @throws BusinessException if the customer is not found
      * @throws BusinessException if no valid menu items are provided
      */
-    async createOrder(dto: CreateOrderDto) {
-        // 1. Find customer by code (equivalent to customerRepository.findByCode())
+    async createOrder(userId: number, dto: CreateOrderDto) {
+        // 0. Automate Delivery Time and Validate Business Hours
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+
+        // Business hours are 08:00 - 00:00. This means it is closed from 00:01 to 07:59.
+        // E.g. hours === 0 && minutes > 0 is closed (00:01 - 00:59)
+        // E.g. hours >= 1 && hours <= 7 is closed.
+        if ((hours === 0 && minutes > 0) || (hours >= 1 && hours <= 7)) {
+            throw new BusinessException(
+                'STORE_CLOSED',
+                'The store is currently closed. Business hours are 08:00 - 00:00.',
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+
+        const deliveryTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+        // 1. Find customer by id
         const customer = await this.customerRepository.findOne({
-            where: { code: dto.customerCode },
+            where: { id: userId },
         });
 
         if (!customer) {
             throw new BusinessException(
                 'CUSTOMER_NOT_FOUND',
-                `No customer found with code: ${dto.customerCode}`,
+                `No customer found with id: ${userId}`,
                 HttpStatus.NOT_FOUND,
             );
         }
@@ -65,12 +83,32 @@ export class OrderService {
             );
         }
 
+        // Create a mapped array that represents exactly what the customer ordered, including duplicates
+        const orderedItems = dto.menuItemIds.map(id => {
+            const item = items.find(i => i.id === id);
+            if (!item) {
+                throw new BusinessException(
+                    'INVALID_MENU_ITEMS',
+                    `Menu item ID ${id} is invalid or not available`,
+                    HttpStatus.BAD_REQUEST,
+                );
+            }
+            return item;
+        });
+
+        const totalPrice = orderedItems.reduce((sum, item) => sum + Number(item.price), 0);
+
         // 3. Build and save order
         const order = this.orderRepository.create({
             customer,
-            deliveryTime: dto.deliveryTime,
+            deliveryTime,
             deliveryMode: dto.deliveryMode,
-            menuItems: items,
+            paymentMode: dto.paymentMode,
+            address: dto.deliveryMode === 'DELIVERY' ? dto.address : undefined,
+            latitude: dto.deliveryMode === 'DELIVERY' ? dto.latitude : undefined,
+            longitude: dto.deliveryMode === 'DELIVERY' ? dto.longitude : undefined,
+            menuItems: orderedItems,
+            totalPrice,
         });
 
         const saved = await this.orderRepository.save(order);
@@ -81,7 +119,9 @@ export class OrderService {
             customerName: `${customer.firstName} ${customer.lastName}`,
             deliveryTime: saved.deliveryTime,
             deliveryMode: saved.deliveryMode,
-            menuItemNames: items.map((item) => item.name),
+            paymentMode: saved.paymentMode,
+            menuItemNames: orderedItems.map((item) => item.name),
+            totalPrice: saved.totalPrice,
             createdAt: saved.createdAt,
         };
     }

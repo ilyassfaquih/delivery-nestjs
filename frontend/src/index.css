@@ -936,3 +936,32 @@ a {
 .fade-up-delay-3 {
   animation-delay: 0.3s;
 }
+
+/* ══════════════════════════════════════════════
+   Print Styles (For Order Receipt)
+   ══════════════════════════════════════════════ */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  body::before {
+    display: none !important;
+  }
+
+  .navbar,
+  .toast-container,
+  .btn {
+    display: none !important;
+    /* Hide navigation and buttons when printing */
+  }
+
+  .receipt-view {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}

@@ -14,7 +14,12 @@ export const AuthProvider = ({ children }) => {
             // For now, we trust the token presence or decode it
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
-                setUser(payload);
+                if (payload.exp * 1000 < Date.now()) {
+                    // Token is expired
+                    logout();
+                    return;
+                }
+                setUser({ ...payload, role: payload.role });
             } catch (e) {
                 logout();
             }
