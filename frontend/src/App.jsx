@@ -10,6 +10,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Checkout from './pages/Checkout';
 import Admin from './pages/Admin';
+import DriverDashboard from './pages/DriverDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -26,7 +27,14 @@ export default function App() {
           <Navbar />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/menu" element={<Menu cart={cart} setCart={setCart} />} />
+            <Route
+              path="/menu"
+              element={
+                <ProtectedRoute blockLivreur public>
+                  <Menu cart={cart} setCart={setCart} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/checkout"
               element={
@@ -38,7 +46,7 @@ export default function App() {
             <Route
               path="/order"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute blockLivreur>
                   <Order cart={cart} setCart={setCart} />
                 </ProtectedRoute>
               }
@@ -51,6 +59,16 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            {/* Driver dashboard route */}
+            <Route
+              path="/livreur"
+              element={
+                <ProtectedRoute requireLivreur={true}>
+                  <DriverDashboard />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
           </Routes>

@@ -25,6 +25,14 @@ export enum PaymentMode {
     CASH = 'CASH',
 }
 
+export enum OrderStatus {
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    IN_TRANSIT = 'IN_TRANSIT',
+    DELIVERED = 'DELIVERED',
+    CANCELLED = 'CANCELLED',
+}
+
 /**
  * Represents a food order placed by a Customer.
  * An order contains one or more MenuItems.
@@ -87,6 +95,25 @@ export class FoodOrder {
     @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     totalPrice: number;
 
+    @Column({
+        type: 'enum',
+        enum: OrderStatus,
+        default: OrderStatus.PENDING,
+    })
+    status: OrderStatus;
+
+    /**
+     * @ManyToOne → Customer (Driver)
+     * Optional link to the driver executing the delivery.
+     */
+    @ManyToOne(() => Customer, { eager: true, nullable: true })
+    @JoinColumn({ name: 'driver_id' })
+    driver: Customer;
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
+
+    /** Set when driver marks order as DELIVERED */
+    @Column({ name: 'delivered_at', type: 'timestamp', nullable: true })
+    deliveredAt: Date;
 }

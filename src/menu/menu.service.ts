@@ -66,4 +66,15 @@ export class MenuService {
 
         return this.menuRepository.save(item);
     }
+
+    /**
+     * Deletes a menu item by id.
+     */
+    async deleteMenuItem(id: number): Promise<void> {
+        const item = await this.menuRepository.findOne({ where: { id } });
+        if (!item) {
+            throw new Error(`Menu Item with ID ${id} not found.`);
+        }
+        await this.menuRepository.remove(item);
+    }
 }

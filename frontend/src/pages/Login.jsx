@@ -17,9 +17,18 @@ export default function Login() {
         setError('');
 
         const result = await login(formData.email, formData.password);
+
         if (result.success) {
-            const origin = location.state?.from?.pathname || '/menu';
-            navigate(origin, { replace: true });
+            // Hna kandiro redirection 3la hssab role
+            if (result.role === 'DRIVER') {
+                navigate('/livreur', { replace: true }); // Driver dashboard route
+            } else if (result.role === 'ADMIN') {
+                navigate('/admin', { replace: true });
+            } else {
+                // Hada client 3adi (CUSTOMER)
+                const origin = location.state?.from?.pathname || '/menu';
+                navigate(origin, { replace: true });
+            }
         } else {
             setError(result.error);
         }

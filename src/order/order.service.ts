@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { FoodOrder } from './entities/food-order.entity';
+import { FoodOrder, OrderStatus } from './entities/food-order.entity';
 import { Customer } from '../customer/entities/customer.entity';
 import { MenuItem } from '../menu/entities/menu-item.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -124,5 +124,106 @@ export class OrderService {
             totalPrice: saved.totalPrice,
             createdAt: saved.createdAt,
         };
+    }
+
+    // ── Driver Methods ──
+
+    async getPendingOrders() {
+        return this.orderRepository.find({
+            where: { status: OrderStatus.PENDING },
+            order: { createdAt: 'DESC' },
+            relations: ['customer', 'menuItems', 'driver'],
+        });
+    }
+
+    async getMyDeliveries(driverId: number) {
+        return this.orderRepository.find({
+            where: {
+                driver: { id: driverId },
+                status: In([OrderStatus.ACCEPTED, OrderStatus.IN_TRANSIT]),
+            },
+            order: { createdAt: 'DESC' },
+            relations: ['customer', 'menuItems', 'driver'],
+        });
+    }
+
+    async acceptOrder(orderId: number, driverId: number) {
+        const order = await this.orderRepository.findOne({ where: { id: orderId } });
+        if (!order) throw new BusinessException('NOT_FOUND', 'Order not found', HttpStatus.NOT_FOUND);
+
+        if (order.status !== OrderStatus.PENDING) {
+            throw new BusinessException('INVALID_STATE', 'Order is no longer pending', HttpStatus.BAD_REQUEST);
+        }
+
+        const driver = await this.customerRepository.findOne({ where: { id: driverId } });
+        if (!driver || (driver.role !== 'DRIVER' && driver.role !== 'ADMIN')) {
+            throw new BusinessException('UNAUTHORIZED', 'Invalid driver account', HttpStatus.UNAUTHORIZED);
+        }
+
+        order.driver = driver;
+        order.status = OrderStatus.ACCEPTED;
+        return this.orderRepository.save(order);
+    }
+
+    async updateOrderStatus(orderId: number, driverId: number, status: OrderStatus) {
+        const order = await this.orderRepository.findOne({
+            where: { id: orderId },
+            relations: ['driver']
+        });
+
+        if (!order) throw new BusinessException('NOT_FOUND', 'Order not found', HttpStatus.NOT_FOUND);
+
+        if (!order.driver || order.driver.id !== driverId) {
+            throw new BusinessException('UNAUTHORIZED', 'Not assigned to this driver', HttpStatus.UNAUTHORIZED);
+        }
+
+        order.status = status;
+        if (status === OrderStatus.DELIVERED) {
+            order.deliveredAt = new Date();
+        }
+        return this.orderRepository.save(order);
+    }
+
+    async getDeliveryHistory(driverId: number) {
+        return this.orderRepository.find({
+            where: {
+                driver: { id: driverId },
+                status: OrderStatus.DELIVERED,
+            },
+            order: { deliveredAt: 'DESC' },
+            relations: ['customer', 'menuItems', 'driver'],
+        });
+    }
+
+    // ── Admin: orders by customer, deliveries by driver ──
+
+    async getOrdersByCustomer(customerId: number) {
+        return this.orderRepository.find({
+            where: { customer: { id: customerId } },
+            order: { createdAt: 'DESC' },
+            relations: ['customer', 'menuItems', 'driver'],
+        });
+    }
+
+    async getDriversWithDeliveries(): Promise<{ driver: Partial<Customer>; orders: FoodOrder[] }[]> {
+        const delivered = await this.orderRepository.find({
+            where: { status: OrderStatus.DELIVERED },
+            order: { deliveredAt: 'DESC' },
+            relations: ['customer', 'menuItems', 'driver'],
+        });
+        const byDriver = new Map<number, FoodOrder[]>();
+        for (const order of delivered) {
+            if (!order.driver) continue;
+            const id = order.driver.id;
+            if (!byDriver.has(id)) byDriver.set(id, []);
+            byDriver.get(id)!.push(order);
+        }
+        return Array.from(byDriver.entries()).map(([driverId, orders]) => {
+            const driver = orders[0]?.driver;
+            return {
+                driver: driver ? { id: driver.id, firstName: driver.firstName, lastName: driver.lastName, email: driver.email, phone: driver.phone } : { id: driverId },
+                orders,
+            };
+        });
     }
 }

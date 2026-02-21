@@ -3,6 +3,7 @@ import {
     Get,
     Post,
     Put,
+    Delete,
     Body,
     Param,
     Query,
@@ -65,5 +66,17 @@ export class MenuController {
         @Body() dto: UpdateMenuItemDto,
     ) {
         return this.menuService.updateMenuItem(+id, dto);
+    }
+
+    /**
+     * Deletes a menu item.
+     * DELETE /api/menu/:id
+     */
+    @Delete(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async deleteMenuItem(@Param('id') id: string) {
+        await this.menuService.deleteMenuItem(+id);
     }
 }

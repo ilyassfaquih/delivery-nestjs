@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
-export default function ProtectedRoute({ children, requireAdmin }) {
+export default function ProtectedRoute({ children, requireAdmin, requireLivreur, blockLivreur, public: isPublic }) {
     const { user, loading } = useContext(AuthContext);
     const location = useLocation();
 
@@ -10,11 +10,26 @@ export default function ProtectedRoute({ children, requireAdmin }) {
         return <div className="text-center text-white mt-10">Loading...</div>;
     }
 
+    // If driver is on a page they're not allowed (menu, order) → redirect to dashboard
+    if (blockLivreur && user?.role === 'DRIVER') {
+        return <Navigate to="/livreur" replace />;
+    }
+
+    // Pages publiques (bhal Menu): ma t-requirech login
+    if (isPublic) {
+        return children;
+    }
+
     if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     if (requireAdmin && user.role !== 'ADMIN') {
+        return <Navigate to="/" replace />;
+    }
+
+    // Require backend role 'DRIVER' for driver-only routes
+    if (requireLivreur && user.role !== 'DRIVER') {
         return <Navigate to="/" replace />;
     }
 

@@ -28,13 +28,21 @@ export default function Navbar() {
 
             <ul className={`nav-links ${open ? 'open' : ''}`}>
                 <li><NavLink to="/" end onClick={() => setOpen(false)}>Home</NavLink></li>
-                <li><NavLink to="/menu" onClick={() => setOpen(false)}>Menu</NavLink></li>
-                <li><NavLink to="/order" onClick={() => setOpen(false)}>Order</NavLink></li>
+                {/* Menu and Order are hidden for driver; only Dashboard is shown */}
+                {(!user || user.role !== 'DRIVER') && (
+                    <>
+                        <li><NavLink to="/menu" onClick={() => setOpen(false)}>Menu</NavLink></li>
+                        <li><NavLink to="/order" onClick={() => setOpen(false)}>Order</NavLink></li>
+                    </>
+                )}
 
                 {user ? (
                     <>
                         {user.role === 'ADMIN' && (
                             <li><NavLink to="/admin" onClick={() => setOpen(false)}>Admin</NavLink></li>
+                        )}
+                        {(user.role === 'DRIVER' || user.role === 'ADMIN') && (
+                            <li><NavLink to="/livreur" onClick={() => setOpen(false)}>Driver Dashboard</NavLink></li>
                         )}
                         <li>
                             <button onClick={handleLogout} className="btn-logout" style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', font: 'inherit' }}>
