@@ -19,10 +19,13 @@ export default function Order({ cart, setCart }) {
     const [mapCenter, setMapCenter] = useState({ lat: 34.020882, lng: -6.841650 }); // Default view: Rabat
     const [markerPosition, setMarkerPosition] = useState(null); // No pin by default
 
-    // Load Google Maps API
+    // Load Google Maps API only if an API key is provided. If not, show a placeholder to avoid noisy console errors.
+    const googleKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '', // Need API Key in .env
+        googleMapsApiKey: googleKey,
+        // If no key is provided the loader will not attempt to fetch maps resources in modern versions,
+        // but we still guard UI rendering below.
     });
 
     const onMapClick = useCallback((e) => {
@@ -252,7 +255,7 @@ export default function Order({ cart, setCart }) {
                                     style={{ marginBottom: '1rem' }}
                                 />
                                 <label>OR Pinpoint your exact location</label>
-                                {isLoaded ? (
+                                {googleKey ? (isLoaded ? (
                                     <div style={{ position: 'relative', width: '100%', height: '300px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', marginTop: '0.5rem' }}>
                                         <GoogleMap
                                             mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -265,6 +268,13 @@ export default function Order({ cart, setCart }) {
                                         </GoogleMap>
                                     </div>
                                 ) : (
+                                    <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', marginTop: '0.5rem', color: 'var(--text-muted)', padding: '1rem', textAlign: 'center' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Map disabled</div>
+                                            <div style={{ fontSize: '0.9rem' }}>No Google Maps API key configured. To enable the map, set <strong>VITE_GOOGLE_MAPS_API_KEY</strong> in your frontend .env file.</div>
+                                        </div>
+                                    </div>
+                                )) : (
                                     <div style={{ width: '100%', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', marginTop: '0.5rem', color: 'var(--text-muted)' }}>
                                         <span className="spinner"></span> Loading Map...
                                     </div>

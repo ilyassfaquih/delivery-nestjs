@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', access_token);
             setToken(access_token);
             setUser(user);
-            return { success: true };
+            return { success: true, role: user?.role };
         } catch (error) {
             return { success: false, error: error.message || 'Login failed' };
         }

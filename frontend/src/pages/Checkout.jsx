@@ -4,7 +4,9 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { useLocation, useNavigate } from 'react-router-dom';
 import { request, createOrder } from '../services/api'; // Import createOrder
 
-const stripePromise = loadStripe('pk_test_placeholder'); // In prod, use env var
+// Do not eagerly load Stripe at module import time (ad-blockers may cause noisy console errors).
+// We'll load it at runtime and handle failures gracefully.
+const DEFAULT_PUBLISHABLE_KEY = 'pk_test_placeholder';
 
 const CheckoutForm = ({ amount, currency, onSuccess }) => {
     const stripe = useStripe();
@@ -78,6 +80,27 @@ export default function Checkout() {
     const location = useLocation();
     const navigate = useNavigate();
     const { total, items, orderDetails } = location.state || { total: 0, items: [], orderDetails: {} };
+    const [stripePromise, setStripePromise] = useState(null);
+    const [stripeLoadError, setStripeLoadError] = useState(null);
+
+    useEffect(() => {
+        let mounted = true;
+        const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || DEFAULT_PUBLISHABLE_KEY;
+        // Load Stripe asynchronously and catch failures (e.g., adblockers or network issues)
+        loadStripe(key)
+            .then((p) => {
+                if (!mounted) return;
+                setStripePromise(p);
+            })
+            .catch((err) => {
+                console.warn('Stripe failed to load:', err?.message || err);
+                if (mounted) setStripeLoadError('Payment service unavailable. Try again later or use Cash.');
+            });
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
 
     if (total === 0) {
         return <div className="text-center mt-20 text-white">No items to checkout</div>;
@@ -103,9 +126,16 @@ export default function Checkout() {
                 <h2 className="text-2xl font-bold text-white mb-6">Checkout</h2>
                 <p className="text-gray-300 mb-8">Total to pay: <span className="text-xl font-bold text-primary">${total}</span></p>
 
-                <Elements stripe={stripePromise}>
-                    <CheckoutForm amount={total} currency="usd" onSuccess={handleSuccess} />
-                </Elements>
+                {stripeLoadError && (
+                    <div className="text-yellow-300">{stripeLoadError}</div>
+                )}
+                {stripePromise ? (
+                    <Elements stripe={stripePromise}>
+                        <CheckoutForm amount={total} currency="usd" onSuccess={handleSuccess} />
+                    </Elements>
+                ) : (
+                    <div className="text-center text-gray-300">Card payments are temporarily unavailable. Please choose Cash or try again later.</div>
+                )}
             </div>
         </div>
     );
