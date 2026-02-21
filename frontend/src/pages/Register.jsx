@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { registerCustomer } from '../services/api';
 import { useToast } from '../components/Toast';
 
@@ -120,6 +121,12 @@ export default function Register() {
                         <div className="code">{result.code}</div>
                     </div>
                 )}
+
+                <p className="mt-6 text-center text-gray-500 text-sm">
+                    <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                        ← Back to Home
+                    </Link>
+                </p>
             </div>
         </div>
     );

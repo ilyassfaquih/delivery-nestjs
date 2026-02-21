@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children, requireAdmin, requireLivreur,
         return <Navigate to="/livreur" replace />;
     }
 
-    // Pages publiques (bhal Menu): ma t-requirech login
+    // Public pages (e.g. Menu): no login required
     if (isPublic) {
         return children;
     }

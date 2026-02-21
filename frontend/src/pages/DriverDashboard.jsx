@@ -10,21 +10,19 @@ export default function DriverDashboard() {
     const [deliveryHistory, setDeliveryHistory] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (silent = false) => {
+        if (!silent) setLoading(true);
         try {
-            if (activeTab === 'pending') {
-                const data = await getPendingOrders();
-                setPendingOrders(data);
-            } else if (activeTab === 'mine') {
-                const data = await getMyDeliveries();
-                setMyDeliveries(data);
-            } else {
-                const data = await getDeliveryHistory();
-                setDeliveryHistory(data);
-            }
+            const [pendingRes, mineRes, historyRes] = await Promise.all([
+                getPendingOrders(),
+                getMyDeliveries(),
+                getDeliveryHistory(),
+            ]);
+            setPendingOrders(pendingRes);
+            setMyDeliveries(mineRes);
+            setDeliveryHistory(historyRes);
         } catch (err) {
-            toast(err.message, 'error');
+            if (!silent) toast(err.message, 'error');
         } finally {
             setLoading(false);
         }
@@ -32,7 +30,13 @@ export default function DriverDashboard() {
 
     useEffect(() => {
         fetchData();
-    }, [activeTab]);
+    }, []);
+
+    // Real-time polling: refresh lists so delivered orders disappear and pending updates show
+    useEffect(() => {
+        const interval = setInterval(() => fetchData(true), 10000); // every 10s, silent
+        return () => clearInterval(interval);
+    }, []);
 
     const handleAccept = async (orderId) => {
         try {

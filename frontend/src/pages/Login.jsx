@@ -88,6 +88,11 @@ export default function Login() {
                         Create one
                     </Link>
                 </p>
+                <p className="mt-3 text-center text-gray-500 text-sm">
+                    <Link to="/" className="text-gray-400 hover:text-white transition-colors">
+                        ← Back to Home
+                    </Link>
+                </p>
             </div>
         </div>
     );
