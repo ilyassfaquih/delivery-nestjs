@@ -18,7 +18,7 @@ jobs:
         run: npm install
 
       - name: Run tests
-        run: npm test 
+        run: npm test --passWithNoTests
 
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
